@@ -52,10 +52,10 @@ public class CommandReload {
                 .forEach(hook -> ((TownyChatHook) hook).reload());
 
         // Check if update checks became enabled
-        if (!DiscordSRV.isUpdateCheckDisabled() && !DiscordSRV.updateChecked) {
-            Bukkit.getScheduler().runTaskAsynchronously(DiscordSRV.getPlugin(), (Runnable) UpdateUtil::checkForUpdates);
-            DiscordSRV.updateChecked = true;
-        }
+//        if (!DiscordSRV.isUpdateCheckDisabled() && !DiscordSRV.updateChecked) {
+//            Bukkit.getScheduler().runTaskAsynchronously(DiscordSRV.getPlugin(), (Runnable) UpdateUtil::checkForUpdates);
+//            DiscordSRV.updateChecked = true;
+//        }
 
         MessageUtil.sendMessage(sender, ChatColor.AQUA + LangUtil.InternalMessage.RELOADED.toString());
 

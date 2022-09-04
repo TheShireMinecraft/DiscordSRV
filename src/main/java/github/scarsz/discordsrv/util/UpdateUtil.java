@@ -36,7 +36,7 @@ public class UpdateUtil {
      * @return boolean indicating if an update to DiscordSRV is available
      */
     public static boolean checkForUpdates(boolean verbose) {
-        JsonObject jsonObject = null;
+        /**JsonObject jsonObject = null;
         try {
             String buildHash = ManifestUtil.getManifestValue("Git-Revision");
 
@@ -113,14 +113,16 @@ public class UpdateUtil {
             }
             DiscordSRV.debug(e);
             return false;
-        }
+        }*/
+
+        return false;
     }
 
-    private static void printUpdateMessage(String explanation) {
-        DiscordSRV.warning("\n\n" + explanation + " Get the latest build at your favorite distribution center.\n\n" +
-                "Spigot: https://www.spigotmc.org/resources/discordsrv.18494/\n" +
-                "Github: https://github.com/DiscordSRV/DiscordSRV/releases\n" +
-                "Direct Download: https://get.discordsrv.com\n");
-    }
+//    private static void printUpdateMessage(String explanation) {
+//        DiscordSRV.warning("\n\n" + explanation + " Get the latest build at your favorite distribution center.\n\n" +
+//                "Spigot: https://www.spigotmc.org/resources/discordsrv.18494/\n" +
+//                "Github: https://github.com/DiscordSRV/DiscordSRV/releases\n" +
+//                "Direct Download: https://get.discordsrv.com\n");
+//    }
 
 }

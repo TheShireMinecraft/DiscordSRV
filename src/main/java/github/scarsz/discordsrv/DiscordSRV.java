@@ -632,20 +632,20 @@ public class DiscordSRV extends JavaPlugin {
         requireLinkModule = new RequireLinkModule();
 
         // start the update checker (will skip if disabled)
-        if (!isUpdateCheckDisabled()) {
-            if (updateChecker == null) {
-                final ThreadFactory gatewayThreadFactory = new ThreadFactoryBuilder().setNameFormat("DiscordSRV - Update Checker").build();
-                updateChecker = Executors.newScheduledThreadPool(1);
-            }
-            updateChecker.schedule(() -> {
-                DiscordSRV.updateIsAvailable = UpdateUtil.checkForUpdates();
-                DiscordSRV.updateChecked = true;
-            }, 0, TimeUnit.SECONDS);
-            updateChecker.scheduleAtFixedRate(() ->
-                    DiscordSRV.updateIsAvailable = UpdateUtil.checkForUpdates(false),
-                    6, 6, TimeUnit.HOURS
-            );
-        }
+//        if (!isUpdateCheckDisabled()) {
+//            if (updateChecker == null) {
+//                final ThreadFactory gatewayThreadFactory = new ThreadFactoryBuilder().setNameFormat("DiscordSRV - Update Checker").build();
+//                updateChecker = Executors.newScheduledThreadPool(1);
+//            }
+//            updateChecker.schedule(() -> {
+//                DiscordSRV.updateIsAvailable = UpdateUtil.checkForUpdates();
+//                DiscordSRV.updateChecked = true;
+//            }, 0, TimeUnit.SECONDS);
+//            updateChecker.scheduleAtFixedRate(() ->
+//                    DiscordSRV.updateIsAvailable = UpdateUtil.checkForUpdates(false),
+//                    6, 6, TimeUnit.HOURS
+//            );
+//        }
 
         // shutdown previously existing jda if plugin gets reloaded
         if (jda != null) try { jda.shutdown(); jda = null; } catch (Exception e) { error(e); }

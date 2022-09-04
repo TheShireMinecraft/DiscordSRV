@@ -64,7 +64,10 @@ public class HerochatHook implements ChatHook {
                 .replace("%channelcolor%", chatChannel.getColor().toString());
 
         String translatedMessage = MessageUtil.translateLegacy(plainMessage);
-        chatChannel.sendRawMessage(translatedMessage);
+        chatChannel.sendRawMessage(
+            translatedMessage
+                .replace("%channelcolor%", chatChannel.getColor().toString())
+        );
 
         PlayerUtil.notifyPlayersOfMentions(player ->
                         chatChannel.getMembers().stream()

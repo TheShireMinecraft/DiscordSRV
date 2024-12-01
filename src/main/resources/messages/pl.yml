@@ -26,6 +26,8 @@
 #                     przykład: NotchIsMe
 # %username%:        nazwa użytkownika osoby na Discordzie
 #                     przykład: Notch
+# %userid%:          person's ID on Discord
+#                     example: 1081004946872352958
 # %channelname%:     nazwa kanału, z którego pochodzi wiadomość
 #                     przykład: czat-serwer
 # %reply%:           komunikat wyświetlany, gdy wiadomość jest odpowiedzią na inną wiadomość.
@@ -41,6 +43,8 @@
 #                   przykład: NotchIsMe
 # %username%:      nazwa użytkownika, na który udzielono odpowiedzi na Discordzie
 #                   przykład: Notch
+# %userid%:        the ID of the user that is being replied to on Discord
+#                   example: 1081004946872352958
 # %message%:       treść wiadomości, na którą udzielono odpowiedzi
 #
 # UWAGA: Symbol zastępczy %reply% musi być obecny w formacie, jeśli chcesz, aby DiscordToMinecraftMessageReplyFormat był wyświetlany w Twojej wiadomości.
@@ -362,8 +366,8 @@ MinecraftPlayerAchievementMessage:
 # %tps%: średni TPS serwera
 # Symbole zastępcze PlaceholderAPI są również obsługiwane
 #
-ChannelTopicUpdaterChatChannelTopicFormat: "%playercount%/%playermax% graczy online | %totalplayers% unikalni gracze, którzy kiedykolwiek dołączyli | Serwer online dla %uptimemins% minutes | Ostatnia zmiana: %date%"
-ChannelTopicUpdaterConsoleChannelTopicFormat: "TPS: %tps% | Mem: %usedmemorygb%GB used/%freememorygb%GB free/%maxmemorygb%GB max | %serverversion%"
+ChannelTopicUpdaterChatChannelTopicFormat: "%playercount%/%playermax% graczy online | %totalplayers% unikalni gracze, którzy kiedykolwiek dołączyli | Serwer online od %uptimemins% minut | Ostatnia zmiana: %date%"
+ChannelTopicUpdaterConsoleChannelTopicFormat: "TPS: %tps% | Pamięć: %usedmemorygb%GB w użyciu/%freememorygb%GB dostępna/%maxmemorygb%GB max | %serverversion%"
 # AtServerShutdownFormats TYLKO obsługuje %totalplayers%, %serverversion%, & %date% / %time%
 ChannelTopicUpdaterChatChannelTopicAtServerShutdownFormat: "Serwer jest offline | %totalplayers% unikalni gracze, którzy kiedykolwiek dołączyli"
 ChannelTopicUpdaterConsoleChannelTopicAtServerShutdownFormat: "Serwer jest offline | %serverversion%"
@@ -406,8 +410,6 @@ ServerWatchdogMessage: "<t:%timestamp%:R> %guildowner%, serwer nie odpowiedział
 # Są to wiadomości używane, gdy konta są połączone
 #
 # Dostępne symbole zastępcze:
-# CodeGenerated:                %code%:         kod wygenerowany dla gracza, z którym ma połączyć swoje konto
-#                               %botname%:      nazwa bota na Discordzie
 # UnknownCode/InvalidCode:      %code%:         kod wygenerowany dla gracza, z którym ma połączyć swoje konto
 #                               %mention%:      wzmianka na koncie Discord
 # DiscordAccountLinked:         %name%:         nazwa gracza Minecraft, z którym było połączone konto Discord użytkownika
@@ -418,6 +420,8 @@ ServerWatchdogMessage: "<t:%timestamp%:R> %guildowner%, serwer nie odpowiedział
 #                               %username%:     nazwa użytkownika Minecraft połączonego konta Minecraft użytkownika
 #                               %mention%:      wzmianka na koncie Discord
 # DiscordLinkedAccountRequired  %message%:      wiadomość, której użytkownik nie mógł wysłać, ponieważ nie był połączony
+# CodeGenerated:                %code%:         kod wygenerowany dla gracza, z którym ma połączyć swoje konto
+#                               %botname%:      nazwa bota na Discordzie
 # MinecraftAccountLinked:       %id%:           identyfikator niezgody użytkownika Discord, z którym było połączone konto Minecraft użytkownika
 #                               %username%:     nazwa niezgody użytkownika Discord, z którym było połączone konto Minecraft użytkownika
 # LinkedCommandSuccess:         %name%:         nazwa użytkownika Discord, z którą połączone jest konto Minecraft użytkownika
@@ -425,7 +429,6 @@ ServerWatchdogMessage: "<t:%timestamp%:R> %guildowner%, serwer nie odpowiedział
 # MinecraftNobodyFound:         %target%:       dane wejściowe, które nie doprowadziły do znalezienia żadnych wyników
 #
 # Discord
-CodeGenerated: "Twój kod linku to %code%. Wyślij wiadomość prywatną do (%botname%) zawierający tylko ten kod jako wiadomość o połączeniu kont."
 UnknownCode: "Nie znam takiego kodu, spróbuj ponownie."
 InvalidCode: "Czy na pewno to Twój kod? Kody linków składają się z 4 cyfr."
 DiscordAccountLinked: "Twoje konto Discord zostało połączone z %name% (%uuid%)"
@@ -433,6 +436,7 @@ DiscordAccountAlreadyLinked: "Jesteś już połączony z %username% (%uuid%)"
 DiscordLinkedAccountRequired: "Próbowałeś przekazać następującą wiadomość na czacie gry, ale ten serwer wymaga, aby Twoje konto Minecraft było połączone z kontem Discord. Połącz go w grze, wpisując `/discord link`. \n```%message%```"
 DiscordLinkedAccountCheckFailed: "Nie można sprawdzić, czy Twoje konto jest połączone, spróbuj ponownie później"
 # Minecraft
+CodeGenerated: "Twój kod linku to %code%. Wyślij wiadomość prywatną do (%botname%) zawierający tylko ten kod jako wiadomość o połączeniu kont."
 ClickToCopyCode: "Kliknij, aby skopiować"
 MinecraftAccountLinked: "&bTwój UUID został powiązany z użytkownikiem Discord %username% (%id%)"
 MinecraftAccountAlreadyLinked: "&bTwoje konto Minecraft jest już powiązane z kontem Discord. Jeśli masz uprawnienia, możesz odłączyć swoje konto z /discord unlink."

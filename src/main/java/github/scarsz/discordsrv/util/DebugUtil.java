@@ -1,7 +1,7 @@
 /*
  * DiscordSRV - https://github.com/DiscordSRV/DiscordSRV
  *
- * Copyright (C) 2016 - 2022 Austin "Scarsz" Shapiro
+ * Copyright (C) 2016 - 2024 Austin "Scarsz" Shapiro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -74,7 +74,9 @@ import java.util.zip.ZipOutputStream;
 public class DebugUtil {
 
     public static final List<String> SENSITIVE_OPTIONS = Arrays.asList(
-            "BotToken", "Experiment_JdbcAccountLinkBackend", "Experiment_JdbcUsername", "Experiment_JdbcPassword"
+        "BotToken",
+        "Experiment_JdbcAccountLinkBackend", "Experiment_JdbcUsername", "Experiment_JdbcPassword",
+        "ProxyHost", "ProxyPort", "ProxyUser", "ProxyPassword"
     );
     public static int initializationCount = 0;
 
@@ -105,16 +107,18 @@ public class DebugUtil {
                     "   main guild: " + DiscordSRV.getPlugin().getMainGuild(),
                     "Environmental variables:",
                     "   discord main guild roles: " + (DiscordSRV.getPlugin().getMainGuild() == null ? "invalid main guild" : DiscordSRV.getPlugin().getMainGuild().getRoles().stream().map(Role::toString).collect(Collectors.toList())),
+                    "   discord server owner: " + (DiscordSRV.getPlugin().getMainGuild() == null ? "invalid main guild" : DiscordSRV.getPlugin().getMainGuild().getOwner()),
                     "   vault groups: " + Arrays.toString(VaultHook.getGroups()),
                     "   PlaceholderAPI expansions: " + getInstalledPlaceholderApiExpansions(),
                     "   Skripts: " + String.join(", ", SkriptHook.getSkripts()),
                     "   /discord command executor: " + (Bukkit.getServer().getPluginCommand("discord") != null ? Bukkit.getServer().getPluginCommand("discord").getPlugin() : ""),
                     "   hooked plugins: " + DiscordSRV.getPlugin().getPluginHooks().stream().map(PluginHook::getPlugin).filter(Objects::nonNull).map(Object::toString).collect(Collectors.joining(", ")),
                     "Threads:",
-                    "    channel topic updater -> alive: " + (DiscordSRV.getPlugin().getChannelTopicUpdater() != null && DiscordSRV.getPlugin().getChannelTopicUpdater().isAlive()),
-                    "    server watchdog -> alive: " + (DiscordSRV.getPlugin().getServerWatchdog() != null && DiscordSRV.getPlugin().getServerWatchdog().isAlive()),
-                    "    nickname updater -> alive: " + (DiscordSRV.getPlugin().getNicknameUpdater() != null && DiscordSRV.getPlugin().getNicknameUpdater().isAlive()),
-                    "    presence updater -> alive: " + (DiscordSRV.getPlugin().getPresenceUpdater() != null && DiscordSRV.getPlugin().getPresenceUpdater().isAlive())
+                    "   channel topic updater -> alive: " + (DiscordSRV.getPlugin().getChannelTopicUpdater() != null && DiscordSRV.getPlugin().getChannelTopicUpdater().isAlive()),
+                    "   server watchdog -> alive: " + (DiscordSRV.getPlugin().getServerWatchdog() != null && DiscordSRV.getPlugin().getServerWatchdog().isAlive()),
+                    "   nickname updater -> alive: " + (DiscordSRV.getPlugin().getNicknameUpdater() != null && DiscordSRV.getPlugin().getNicknameUpdater().isAlive()),
+                    "   presence updater -> alive: " + (DiscordSRV.getPlugin().getPresenceUpdater() != null && DiscordSRV.getPlugin().getPresenceUpdater().isAlive()),
+                    "Guilds:" + listGuilds()
             })));
             files.add(fileMap("relevant-lines-from-server.log", "lines from the server console containing \"discordsrv\"", getRelevantLinesFromServerLog()));
             files.add(fileMap("config.yml", "raw plugins/DiscordSRV/config.yml", FileUtils.readFileToString(DiscordSRV.getPlugin().getConfigFile(), StandardCharsets.UTF_8)));
@@ -137,6 +141,17 @@ public class DebugUtil {
         }
 
         return uploadReport(files, aesBits, requester);
+    }
+
+    private static String listGuilds() {
+        if (DiscordUtil.getJda() == null) return "\n   null JDA";
+        String list = "";
+        for (Guild server : DiscordUtil.getJda().getGuilds()) {
+            list += "\n   " + server + ":  [";
+            for (TextChannel channel : server.getTextChannels()) list += channel + ", ";
+            list += "]";
+        }
+        return list;
     }
 
     private static Map<String, String> fileMap(String name, String description, String content) {
@@ -279,7 +294,7 @@ public class DebugUtil {
 
             for (Map.Entry<String, String> entry : DiscordSRV.getPlugin().getChannels().entrySet()) {
                 TextChannel textChannel = DiscordUtil.getTextChannelById(entry.getValue());
-                if (textChannel == null) {
+                if (textChannel == null || !textChannel.getId().equals(entry.getValue())) {
                     messages.add(new Message(Message.Type.INVALID_CHANNEL, "{" + entry.getKey() + ":" + entry.getValue() + "}"));
                     continue;
                 }
@@ -295,8 +310,8 @@ public class DebugUtil {
         }
 
         String consoleChannelId = DiscordSRV.config().getString("DiscordConsoleChannelId");
-        if (DiscordSRV.getPlugin().getChannels().values().stream().filter(Objects::nonNull)
-                .anyMatch(channelId -> channelId.equals(consoleChannelId))) {
+        if (consoleChannelId != null && !consoleChannelId.matches("^0*$")
+                && DiscordSRV.getPlugin().getChannels().values().stream().filter(Objects::nonNull).anyMatch(channelId -> channelId.equals(consoleChannelId))) {
             messages.add(new Message(Message.Type.CONSOLE_AND_CHAT_SAME_CHANNEL));
         }
 
@@ -334,7 +349,7 @@ public class DebugUtil {
         } else if (!DiscordSRV.updateChecked || DiscordSRV.isUpdateCheckDisabled()) {
             messages.add(new Message(Message.Type.UPDATE_CHECK_DISABLED));
         }
-        
+
         StringBuilder stringBuilder = new StringBuilder();
         if (messages.isEmpty()) {
             stringBuilder.append("No issues detected automatically\n");
@@ -495,7 +510,6 @@ public class DebugUtil {
         return String.join("\n", output);
     }
 
-
     private static String getThreads() {
         Map<Thread, StackTraceElement[]> stackTraces = Thread.getAllStackTraces();
         Set<Thread> alreadyLoggedThreads = new HashSet<>();
@@ -524,15 +538,22 @@ public class DebugUtil {
             if (alreadyLoggedThreads.add(thread)) {
                 Plugin plugin = null;
                 try {
-                    plugin = Bukkit.getScheduler().getActiveWorkers().stream()
-                            .filter(work -> work.getThread() == thread)
-                            .map(BukkitWorker::getOwner).findAny().orElse(null);
+                    plugin = SchedulerUtil.isFolia()
+                             ? null // not implemented on folia
+                             : Bukkit.getScheduler().getActiveWorkers().stream()
+                               .filter(work -> work.getThread() == thread)
+                               .map(BukkitWorker::getOwner).findAny().orElse(null);
                 } catch (Throwable ignored) {}
 
                 stringBuilder.append("- ").append(thread.getName())
                         .append(plugin != null ? " (Owned by " + plugin.getName() + ")" : "")
                         .append('\n');
             }
+        }
+
+        if (SchedulerUtil.isFolia()) {
+            stringBuilder.append("\nScheduler info is not available on Folia.");
+            return stringBuilder.toString();
         }
 
         try {
@@ -688,7 +709,7 @@ public class DebugUtil {
 
         Map<String, Object> payload = new HashMap<>();
         payload.put("description", b64(encrypt(keyBytes, description)));
-        payload.put("expiration", TimeUnit.DAYS.toMinutes(7));
+        payload.put("expiration", TimeUnit.DAYS.toMinutes(21));
         payload.put("files", encryptedFiles);
         HttpRequest request = HttpRequest.post(binHost + "/v1/post")
                 .userAgent("DiscordSRV " + DiscordSRV.version)

@@ -1,7 +1,7 @@
 /*
  * DiscordSRV - https://github.com/DiscordSRV/DiscordSRV
  *
- * Copyright (C) 2016 - 2022 Austin "Scarsz" Shapiro
+ * Copyright (C) 2016 - 2024 Austin "Scarsz" Shapiro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,18 +20,21 @@
 
 package github.scarsz.discordsrv.api.events;
 
-import lombok.Getter;
 import org.bukkit.command.CommandSender;
 
 /**
  * <p>Called directly after the configuration was reloaded and the requester was informed.</p>
  */
+@SuppressWarnings("LombokGetterMayBeUsed")
 public class ConfigReloadedEvent extends Event {
 
-    @Getter private final CommandSender requester;
+    private final CommandSender requester;
 
     public ConfigReloadedEvent(CommandSender requester) {
         this.requester = requester;
     }
 
+    public CommandSender getRequester() {
+        return this.requester;
+    }
 }

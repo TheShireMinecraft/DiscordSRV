@@ -1,7 +1,7 @@
 /*
  * DiscordSRV - https://github.com/DiscordSRV/DiscordSRV
  *
- * Copyright (C) 2016 - 2022 Austin "Scarsz" Shapiro
+ * Copyright (C) 2016 - 2024 Austin "Scarsz" Shapiro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,6 +24,7 @@ import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.util.DiscordUtil;
 import github.scarsz.discordsrv.util.LangUtil;
 import github.scarsz.discordsrv.util.MessageUtil;
+import github.scarsz.discordsrv.util.SchedulerUtil;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import org.apache.commons.lang3.StringUtils;
@@ -38,8 +39,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static github.scarsz.discordsrv.commands.CommandLinked.*;
-
 public class CommandUnlink {
 
     @Command(commandNames = { "unlink", "clearlinked" },
@@ -47,7 +46,7 @@ public class CommandUnlink {
             permission = "discordsrv.unlink"
     )
     public static void execute(CommandSender sender, String[] args) {
-        Bukkit.getScheduler().runTaskAsynchronously(DiscordSRV.getPlugin(), () -> executeAsync(sender, args));
+        SchedulerUtil.runTaskAsynchronously(DiscordSRV.getPlugin(), () -> executeAsync(sender, args));
     }
 
     private static void executeAsync(CommandSender sender, String[] args) {
@@ -81,11 +80,11 @@ public class CommandUnlink {
 
             if (target.length() == 32 || target.length() == 36 && args.length == 1) {
                 // target is UUID
-                notifyInterpret(sender, "UUID");
+                CommandLinked.notifyInterpret(sender, "UUID");
                 OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(target));
-                notifyPlayer(sender, player);
+                CommandLinked.notifyPlayer(sender, player);
                 String discordId = DiscordSRV.getPlugin().getAccountLinkManager().getDiscordId(player.getUniqueId());
-                notifyDiscord(sender, discordId);
+                CommandLinked.notifyDiscord(sender, discordId);
                 if (discordId != null) {
                     DiscordSRV.getPlugin().getAccountLinkManager().unlink(discordId);
                     notifyUnlinked(sender);
@@ -94,10 +93,10 @@ public class CommandUnlink {
             } else if (args.length == 1 && DiscordUtil.getUserById(target) != null ||
                     (StringUtils.isNumeric(target) && target.length() >= 17 && target.length() <= 20)) {
                 // target is a Discord ID
-                notifyInterpret(sender, "Discord ID");
+                CommandLinked.notifyInterpret(sender, "Discord ID");
                 UUID uuid = DiscordSRV.getPlugin().getAccountLinkManager().getUuid(target);
-                notifyPlayer(sender, uuid != null ? Bukkit.getOfflinePlayer(uuid) : null);
-                notifyDiscord(sender, target);
+                CommandLinked.notifyPlayer(sender, uuid != null ? Bukkit.getOfflinePlayer(uuid) : null);
+                CommandLinked.notifyDiscord(sender, target);
                 if (uuid != null) {
                     DiscordSRV.getPlugin().getAccountLinkManager().unlink(uuid);
                     notifyUnlinked(sender);
@@ -113,9 +112,9 @@ public class CommandUnlink {
 
                     if (player != null) {
                         // found them
-                        notifyInterpret(sender, "Minecraft player");
-                        notifyPlayer(sender, player);
-                        notifyDiscord(sender, DiscordSRV.getPlugin().getAccountLinkManager().getDiscordId(player.getUniqueId()));
+                        CommandLinked.notifyInterpret(sender, "Minecraft player");
+                        CommandLinked.notifyPlayer(sender, player);
+                        CommandLinked.notifyDiscord(sender, DiscordSRV.getPlugin().getAccountLinkManager().getDiscordId(player.getUniqueId()));
 
                         DiscordSRV.getPlugin().getAccountLinkManager().unlink(player.getUniqueId());
                         notifyUnlinked(sender);
@@ -136,24 +135,24 @@ public class CommandUnlink {
                             .collect(Collectors.toSet());
 
                     if (matches.size() != 0) {
-                        notifyInterpret(sender, "Discord name");
+                        CommandLinked.notifyInterpret(sender, "Discord name");
 
                         if (matches.size() == 1) {
                             User user = matches.iterator().next();
-                            notifyDiscord(sender, user.getId());
+                            CommandLinked.notifyDiscord(sender, user.getId());
                             UUID uuid = DiscordSRV.getPlugin().getAccountLinkManager().getUuid(user.getId());
                             if (uuid != null) {
-                                notifyPlayer(sender, Bukkit.getOfflinePlayer(uuid));
+                                CommandLinked.notifyPlayer(sender, Bukkit.getOfflinePlayer(uuid));
                                 DiscordSRV.getPlugin().getAccountLinkManager().unlink(user.getId());
                                 notifyUnlinked(sender);
                             } else {
-                                notifyPlayer(sender, null);
+                                CommandLinked.notifyPlayer(sender, null);
                             }
                         } else {
                             matches.stream().limit(5).forEach(user -> {
                                 UUID uuid = DiscordSRV.getPlugin().getAccountLinkManager().getUuid(user.getId());
-                                notifyPlayer(sender, uuid != null ? Bukkit.getOfflinePlayer(uuid) : null);
-                                notifyDiscord(sender, user.getId());
+                                CommandLinked.notifyPlayer(sender, uuid != null ? Bukkit.getOfflinePlayer(uuid) : null);
+                                CommandLinked.notifyDiscord(sender, user.getId());
                             });
 
                             int remaining = matches.size() - 5;

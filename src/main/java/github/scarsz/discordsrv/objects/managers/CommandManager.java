@@ -1,7 +1,7 @@
 /*
  * DiscordSRV - https://github.com/DiscordSRV/DiscordSRV
  *
- * Copyright (C) 2016 - 2022 Austin "Scarsz" Shapiro
+ * Copyright (C) 2016 - 2024 Austin "Scarsz" Shapiro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -47,7 +47,6 @@ public class CommandManager {
     public CommandManager() {
         List<Class<?>> commandClasses = Arrays.asList(
                 CommandBroadcast.class,
-                CommandDebug.class,
                 CommandDebugger.class,
                 CommandHelp.class,
                 CommandLanguage.class,

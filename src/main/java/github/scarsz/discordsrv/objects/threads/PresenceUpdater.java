@@ -1,7 +1,7 @@
 /*
  * DiscordSRV - https://github.com/DiscordSRV/DiscordSRV
  *
- * Copyright (C) 2016 - 2022 Austin "Scarsz" Shapiro
+ * Copyright (C) 2016 - 2024 Austin "Scarsz" Shapiro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -101,8 +101,11 @@ public class PresenceUpdater extends Thread {
                         } else if (StringUtils.startsWithIgnoreCase(status, "playing")) {
                             String removed = status.substring("playing".length()).trim();
                             DiscordUtil.getJda().getPresence().setPresence(onlineStatus, Activity.playing(removed), false);
+                        } else if (StringUtils.startsWithIgnoreCase(status, "competing")) {
+                            String removed = status.substring("competing".length()).trim();
+                            DiscordUtil.getJda().getPresence().setPresence(onlineStatus, Activity.competing(removed), false);
                         } else {
-                            DiscordUtil.getJda().getPresence().setPresence(onlineStatus, Activity.playing(status), false);
+                            DiscordUtil.getJda().getPresence().setPresence(onlineStatus, Activity.customStatus(status), false);
                         }
                     } else {
                         DiscordUtil.getJda().getPresence().setPresence(onlineStatus, null, false);

@@ -1,7 +1,7 @@
 /*
  * DiscordSRV - https://github.com/DiscordSRV/DiscordSRV
  *
- * Copyright (C) 2016 - 2022 Austin "Scarsz" Shapiro
+ * Copyright (C) 2016 - 2024 Austin "Scarsz" Shapiro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,6 +27,7 @@ import github.scarsz.discordsrv.objects.managers.AccountLinkManager;
 import github.scarsz.discordsrv.objects.managers.GroupSynchronizationManager;
 import github.scarsz.discordsrv.util.DiscordUtil;
 import github.scarsz.discordsrv.util.PluginUtil;
+import github.scarsz.discordsrv.util.SchedulerUtil;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
@@ -39,9 +40,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.plugin.Plugin;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.*;
+import org.jetbrains.annotations.NotNull;
 
 public class LuckPermsHook implements PluginHook, net.luckperms.api.context.ContextCalculator<Player> {
 
@@ -97,7 +98,7 @@ public class LuckPermsHook implements PluginHook, net.luckperms.api.context.Cont
     private void handle(UUID user) {
         if (!DiscordSRV.getPlugin().isGroupRoleSynchronizationEnabled()) return;
         OfflinePlayer player = Bukkit.getOfflinePlayer(user);
-        Bukkit.getScheduler().runTaskLaterAsynchronously(DiscordSRV.getPlugin(),
+        SchedulerUtil.runTaskLaterAsynchronously(DiscordSRV.getPlugin(),
                 () -> DiscordSRV.getPlugin().getGroupSynchronizationManager().resync(
                         player,
                         GroupSynchronizationManager.SyncDirection.TO_DISCORD,
@@ -106,7 +107,6 @@ public class LuckPermsHook implements PluginHook, net.luckperms.api.context.Cont
                 5
         );
     }
-
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPluginDisable(PluginDisableEvent event) {
@@ -117,7 +117,7 @@ public class LuckPermsHook implements PluginHook, net.luckperms.api.context.Cont
     }
 
     @Override
-    public void calculate(@NonNull Player target, net.luckperms.api.context.ContextConsumer consumer) {
+    public void calculate(@NotNull Player target, net.luckperms.api.context.ContextConsumer consumer) {
         UUID uuid = target.getUniqueId();
         AccountLinkManager accountLinkManager = DiscordSRV.getPlugin().getAccountLinkManager();
         if (!accountLinkManager.isInCache(uuid)) {

@@ -1,7 +1,7 @@
 /*
  * DiscordSRV - https://github.com/DiscordSRV/DiscordSRV
  *
- * Copyright (C) 2016 - 2022 Austin "Scarsz" Shapiro
+ * Copyright (C) 2016 - 2024 Austin "Scarsz" Shapiro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -42,6 +42,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.io.File;
@@ -51,8 +52,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-
-import static github.scarsz.discordsrv.util.MessageFormatResolver.getMessageFormat;
 
 public class DiscordChatListener extends ListenerAdapter {
 
@@ -64,14 +63,14 @@ public class DiscordChatListener extends ListenerAdapter {
 
         // block webhooks
         if (event.isWebhookMessage()) {
-            if (DiscordSRV.config().getBoolean("DiscordChatChannelBlockWebhooks")) {
-                DiscordSRV.debug(Debug.DISCORD_TO_MINECRAFT, "Received Discord message from webhook" + event.getAuthor() + " but DiscordChatChannelBlockWebhooks is on");
-                return;
-            }
-
             // Prevent our own webhook from being picked up
             String webhook = WebhookUtil.getWebhookUrlFromCache(event.getChannel());
             if (webhook != null && webhook.split("/")[6].equals(event.getAuthor().getId())) return;
+
+            if (DiscordSRV.config().getBoolean("DiscordChatChannelBlockWebhooks")) {
+                DiscordSRV.debug(Debug.DISCORD_TO_MINECRAFT, "Received Discord message from webhook " + event.getAuthor() + " but DiscordChatChannelBlockWebhooks is on");
+                return;
+            }
         }
 
         // canned responses
@@ -96,6 +95,9 @@ public class DiscordChatListener extends ListenerAdapter {
         if (StringUtils.isBlank(message) && event.getMessage().getAttachments().isEmpty() && event.getMessage().getStickers().isEmpty()) return;
         if (processPlayerListCommand(event, message)) return;
         if (processConsoleCommand(event, event.getMessage().getContentRaw())) return;
+
+        // sanitise
+        message = message.replace("\u001B", "");
 
         // return if should not send discord chat
         if (!DiscordSRV.config().getBoolean("DiscordChatChannelDiscordToMinecraft")) return;
@@ -220,7 +222,7 @@ public class DiscordChatListener extends ListenerAdapter {
 
         // get the correct format message
         String destinationGameChannelNameForTextChannel = DiscordSRV.getPlugin().getDestinationGameChannelNameForTextChannel(event.getChannel());
-        String formatMessage = getMessageFormat(selectedRoles, destinationGameChannelNameForTextChannel);
+        String formatMessage = MessageFormatResolver.getMessageFormat(selectedRoles, destinationGameChannelNameForTextChannel);
 
         message = message != null ? message : "<blank message>";
         boolean isLegacy = MessageUtil.isLegacy(message) || MessageUtil.isLegacy(formatMessage);
@@ -318,16 +320,21 @@ public class DiscordChatListener extends ListenerAdapter {
                 postEvent.getMinecraftMessage(),
                 event.getAuthor()
         );
-
-        if (DiscordSRV.config().getBoolean("DiscordChatChannelBroadcastDiscordMessagesToConsole")) {
-            DiscordSRV.info(LangUtil.InternalMessage.CHAT + ": " + MessageUtil.strip(MessageUtil.toLegacy(postEvent.getMinecraftMessage()).replace("»", ">")));
-        }
     }
 
     private boolean handleMessageAddons(GuildMessageReceivedEvent event, DiscordGuildMessagePreProcessEvent preEvent, List<Role> selectedRoles, Role topRole, String url) {
+        // apply regex filters to url
+        for (Map.Entry<Pattern, String> entry : DiscordSRV.getPlugin().getDiscordRegexes().entrySet()) {
+            url = entry.getKey().matcher(url).replaceAll(entry.getValue());
+            if (StringUtils.isBlank(url)) {
+                DiscordSRV.debug(Debug.DISCORD_TO_MINECRAFT, "Not processing Discord message addon because its URL was cleared by a filter: " + entry.getKey().pattern());
+                return false;
+            }
+        }
+
         // get the correct format message
         String destinationGameChannelNameForTextChannel = DiscordSRV.getPlugin().getDestinationGameChannelNameForTextChannel(event.getChannel());
-        String placedMessage = getMessageFormat(selectedRoles, destinationGameChannelNameForTextChannel);
+        String placedMessage = MessageFormatResolver.getMessageFormat(selectedRoles, destinationGameChannelNameForTextChannel);
 
         placedMessage = MessageUtil.translateLegacy(
                 replacePlaceholders(placedMessage, event, selectedRoles));
@@ -352,8 +359,6 @@ public class DiscordChatListener extends ListenerAdapter {
             return true;
         }
         DiscordSRV.getPlugin().broadcastMessageToMinecraftServer(DiscordSRV.getPlugin().getDestinationGameChannelNameForTextChannel(event.getChannel()), component, event.getAuthor());
-        if (DiscordSRV.config().getBoolean("DiscordChatChannelBroadcastDiscordMessagesToConsole"))
-            DiscordSRV.info(LangUtil.InternalMessage.CHAT + ": " + MessageUtil.strip(MessageUtil.toLegacy(component).replace("»", ">")));
         return false;
     }
 
@@ -387,18 +392,30 @@ public class DiscordChatListener extends ListenerAdapter {
         return input.replace("%channelname%", event.getChannel().getName())
                 .replace("%name%", escape.apply(MessageUtil.strip(event.getMember() != null ? event.getMember().getEffectiveName() : event.getAuthor().getName())))
                 .replace("%username%", escape.apply(MessageUtil.strip(event.getAuthor().getName())))
+                .replace("%userid%", event.getAuthor().getId())
                 .replace("%toprole%", escape.apply(DiscordUtil.getRoleName(!selectedRoles.isEmpty() ? selectedRoles.get(0) : null)))
                 .replace("%toproleinitial%", !selectedRoles.isEmpty() ? escape.apply(DiscordUtil.getRoleName(selectedRoles.get(0)).substring(0, 1)) : "")
                 .replace("%toprolealias%", getTopRoleAlias(!selectedRoles.isEmpty() ? selectedRoles.get(0) : null))
                 .replace("%allroles%", escape.apply(DiscordUtil.getFormattedRoles(selectedRoles)))
-                .replace("%reply%", event.getMessage().getReferencedMessage() != null ? replaceReplyPlaceholders(LangUtil.Message.CHAT_TO_MINECRAFT_REPLY.toString(), event.getMessage().getReferencedMessage()) : "")
+                .replace("%reply%", replaceReplyPlaceholders(LangUtil.Message.CHAT_TO_MINECRAFT_REPLY.toString(), event.getMessage().getReferencedMessage()))
                 .replace("\\~", "~") // get rid of escaped characters, since Minecraft doesn't use markdown
                 .replace("\\*", "*") // get rid of escaped characters, since Minecraft doesn't use markdown
                 .replace("\\_", "_"); // get rid of escaped characters, since Minecraft doesn't use markdown
     }
 
     private String replaceReplyPlaceholders(String format, Message repliedMessage) {
-        Function<String, String> escape = MessageUtil.isLegacy(format)
+        if (repliedMessage == null) {
+            return "";
+        }
+
+        boolean isLegacy = MessageUtil.isLegacy(format);
+        String message = repliedMessage.getContentRaw();
+
+        Component reserialized = MessageUtil.reserializeToMinecraftBasedOnConfig(message);
+        message = MessageUtil.toPlain(reserialized, isLegacy);
+        if (!isLegacy) message = MessageUtil.escapeMiniTokens(message);
+
+        Function<String, String> escape = isLegacy
                 ? str -> str
                 : str -> str.replaceAll("([<>])", "\\\\$1");
 
@@ -406,7 +423,8 @@ public class DiscordChatListener extends ListenerAdapter {
 
         return format.replace("%name%", escape.apply(MessageUtil.strip(repliedUserName)))
                 .replace("%username%", escape.apply(MessageUtil.strip(repliedMessage.getAuthor().getName())))
-                .replace("%message%", escape.apply(MessageUtil.strip(repliedMessage.getContentDisplay())));
+                .replace("%userid%", repliedMessage.getAuthor().getId())
+                .replace("%message%", message);
     }
 
     private boolean processPlayerListCommand(GuildMessageReceivedEvent event, String message) {
@@ -472,10 +490,13 @@ public class DiscordChatListener extends ListenerAdapter {
         return true;
     }
 
+    private final boolean useFeedbackForwardingSender = PaperForwardingCommandSender.isSenderExists();
+
     private boolean processConsoleCommand(GuildMessageReceivedEvent event, String message) {
         if (!DiscordSRV.config().getBoolean("DiscordChatChannelConsoleCommandEnabled")) return false;
 
         String prefix = DiscordSRV.config().getString("DiscordChatChannelConsoleCommandPrefix");
+        if (prefix.isEmpty()) return false;
         if (!StringUtils.startsWithIgnoreCase(message, prefix)) return false;
         String command = message.substring(prefix.length()).trim();
 
@@ -568,7 +589,16 @@ public class DiscordChatListener extends ListenerAdapter {
 
         // It uses the command from the consoleEvent in case the API user wants to hijack/change it
         // at this point, the user has permission to run commands at all and is able to run the requested command, so do it
-        Bukkit.getScheduler().runTask(DiscordSRV.getPlugin(), () -> Bukkit.getServer().dispatchCommand(new CommandSenderDynamicProxy(Bukkit.getConsoleSender(), event).getProxy(), consoleEvent.getCommand()));
+        SchedulerUtil.runTask(DiscordSRV.getPlugin(), () -> {
+            CommandSender preferredSender;
+
+            if (useFeedbackForwardingSender)
+                preferredSender = new PaperForwardingCommandSender(event).getFeedbackSender();
+            else
+                preferredSender = new CommandSenderDynamicProxy(Bukkit.getConsoleSender(), event).getProxy();
+
+            Bukkit.getServer().dispatchCommand(preferredSender, consoleEvent.getCommand());
+        });
 
         DiscordSRV.api.callEvent(new DiscordConsoleCommandPostProcessEvent(event, consoleEvent.getCommand(), false));
         return true;

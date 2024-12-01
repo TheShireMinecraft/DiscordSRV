@@ -1,7 +1,7 @@
 /*
  * DiscordSRV - https://github.com/DiscordSRV/DiscordSRV
  *
- * Copyright (C) 2016 - 2022 Austin "Scarsz" Shapiro
+ * Copyright (C) 2016 - 2024 Austin "Scarsz" Shapiro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,21 +20,20 @@
 
 package github.scarsz.discordsrv.api.events;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.bukkit.event.Cancellable;
 
 /**
  * <p>Called before DiscordSRV has processed a watchdog message, modifications may be overwritten by DiscordSRV's processing.</p>
  */
+@SuppressWarnings({"LombokGetterMayBeUsed", "LombokSetterMayBeUsed"})
 public class WatchdogMessagePreProcessEvent extends Event implements Cancellable {
 
-    @Getter @Setter private boolean cancelled;
+    private boolean cancelled;
 
-    @Getter @Setter private String channel;
-    @Getter @Setter private String message;
+    private String channel;
+    private String message;
 
-    @Getter @Setter private int count;
+    private int count;
 
     public WatchdogMessagePreProcessEvent(String channel, String message, int count, boolean cancelled) {
         this.channel = channel;
@@ -43,4 +42,35 @@ public class WatchdogMessagePreProcessEvent extends Event implements Cancellable
         setCancelled(cancelled);
     }
 
+    public boolean isCancelled() {
+        return this.cancelled;
+    }
+
+    public String getChannel() {
+        return this.channel;
+    }
+
+    public String getMessage() {
+        return this.message;
+    }
+
+    public int getCount() {
+        return this.count;
+    }
+
+    public void setCancelled(boolean cancelled) {
+        this.cancelled = cancelled;
+    }
+
+    public void setChannel(String channel) {
+        this.channel = channel;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
 }

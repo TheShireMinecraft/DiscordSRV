@@ -1,7 +1,7 @@
 /*
  * DiscordSRV - https://github.com/DiscordSRV/DiscordSRV
  *
- * Copyright (C) 2016 - 2022 Austin "Scarsz" Shapiro
+ * Copyright (C) 2016 - 2024 Austin "Scarsz" Shapiro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,6 @@
 
 package github.scarsz.discordsrv.api.events;
 
-import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
@@ -30,11 +29,12 @@ import net.dv8tion.jda.api.entities.TextChannel;
  * <p>Called directly after a message is sent to a {@link TextChannel} by the bot</p>
  * <b>Please not that this only includes message sent from {@link github.scarsz.discordsrv.util.DiscordUtil}, messages from API hooks may not trigger this</b>
  */
+@SuppressWarnings("LombokGetterMayBeUsed")
 public class DiscordGuildMessageSentEvent extends DiscordEvent {
 
-    @Getter private final TextChannel channel;
-    @Getter private final Guild guild;
-    @Getter private final Message message;
+    private final TextChannel channel;
+    private final Guild guild;
+    private final Message message;
 
     public DiscordGuildMessageSentEvent(JDA jda, Message message) {
         super(jda);
@@ -43,4 +43,15 @@ public class DiscordGuildMessageSentEvent extends DiscordEvent {
         this.message = message;
     }
 
+    public TextChannel getChannel() {
+        return this.channel;
+    }
+
+    public Guild getGuild() {
+        return this.guild;
+    }
+
+    public Message getMessage() {
+        return this.message;
+    }
 }

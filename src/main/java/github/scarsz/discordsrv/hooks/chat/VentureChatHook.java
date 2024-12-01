@@ -1,7 +1,7 @@
 /*
  * DiscordSRV - https://github.com/DiscordSRV/DiscordSRV
  *
- * Copyright (C) 2016 - 2022 Austin "Scarsz" Shapiro
+ * Copyright (C) 2016 - 2024 Austin "Scarsz" Shapiro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -110,9 +110,9 @@ public class VentureChatHook implements ChatHook {
             DiscordSRV.debug(Debug.MINECRAFT_TO_DISCORD, "A VentureChat message was received but it was not delivered to Discord because the message didn't start with \"" + prefix + "\" (DiscordChatChannelPrefixRequiredToProcessMessage): \"" + message + "\"");
             return;
         }
-        
+
         String channel = chatChannel.getName();
-        
+
         VentureChatMessagePreProcessEvent preEvent = DiscordSRV.api.callEvent(new VentureChatMessagePreProcessEvent(channel, message, event));
         if (preEvent.isCancelled()) {
             DiscordSRV.debug(Debug.MINECRAFT_TO_DISCORD, "VentureChatMessagePreProcessEvent was cancelled, message send aborted");
@@ -163,7 +163,7 @@ public class VentureChatHook implements ChatHook {
             discordMessage = discordMessage.replace("@", "@\u200B"); // zero-width space
             message = message.replace("@", "@\u200B"); // zero-width space
         }
-        
+
         VentureChatMessagePostProcessEvent postEvent = DiscordSRV.api.callEvent(new VentureChatMessagePostProcessEvent(channel, discordMessage, event, preEvent.isCancelled()));
         if (postEvent.isCancelled()) {
             DiscordSRV.debug(Debug.MINECRAFT_TO_DISCORD, "VentureChatMessagePostProcessEvent was cancelled, message send aborted");
@@ -275,4 +275,5 @@ public class VentureChatHook implements ChatHook {
     public Plugin getPlugin() {
         return PluginUtil.getPlugin("VentureChat");
     }
+
 }

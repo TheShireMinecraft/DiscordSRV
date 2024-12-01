@@ -1,7 +1,7 @@
 /*
  * DiscordSRV - https://github.com/DiscordSRV/DiscordSRV
  *
- * Copyright (C) 2016 - 2022 Austin "Scarsz" Shapiro
+ * Copyright (C) 2016 - 2024 Austin "Scarsz" Shapiro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,8 +22,10 @@ package github.scarsz.discordsrv.commands;
 
 import github.scarsz.discordsrv.Debug;
 import github.scarsz.discordsrv.DiscordSRV;
+import github.scarsz.discordsrv.util.DebugUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 
 import java.util.*;
 
@@ -74,7 +76,8 @@ public class CommandDebugger {
         } else if (subCommand.equalsIgnoreCase("stop") || subCommand.equalsIgnoreCase("off")
                 || (upload = subCommand.equalsIgnoreCase("upload"))) {
             if (upload) {
-                CommandDebug.execute(sender, arguments.toArray(new String[0]));
+                String result = DebugUtil.run(sender instanceof ConsoleCommandSender ? "CONSOLE" : sender.getName(), arguments.size() == 0 ? 256 : Integer.parseInt(arguments.get(0)));
+                sender.sendMessage(ChatColor.DARK_AQUA + "Your debug report has been generated and is available at " + ChatColor.AQUA + result);
             } else {
                 sender.sendMessage(ChatColor.DARK_AQUA + "Debugger disabled");
             }
@@ -84,4 +87,5 @@ public class CommandDebugger {
 
         sender.sendMessage(ChatColor.RED + "Invalid subcommand " + ChatColor.DARK_RED + subCommand);
     }
+
 }

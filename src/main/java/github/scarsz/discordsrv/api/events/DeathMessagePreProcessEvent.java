@@ -1,7 +1,7 @@
 /*
  * DiscordSRV - https://github.com/DiscordSRV/DiscordSRV
  *
- * Copyright (C) 2016 - 2022 Austin "Scarsz" Shapiro
+ * Copyright (C) 2016 - 2024 Austin "Scarsz" Shapiro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,8 +21,6 @@
 package github.scarsz.discordsrv.api.events;
 
 import github.scarsz.discordsrv.objects.MessageFormat;
-import lombok.Getter;
-import lombok.Setter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -30,13 +28,14 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 /**
  * <p>Called before DiscordSRV has processed a death message, modifications may be overwritten by DiscordSRV's processing.</p>
  */
+@SuppressWarnings({"LombokGetterMayBeUsed", "LombokSetterMayBeUsed"})
 public class DeathMessagePreProcessEvent extends GameEvent<PlayerDeathEvent> implements Cancellable {
 
-    @Getter @Setter private boolean cancelled;
+    private boolean cancelled;
 
-    @Getter @Setter private String deathMessage;
-    @Getter @Setter private String channel;
-    @Getter @Setter private MessageFormat messageFormat;
+    private String deathMessage;
+    private String channel;
+    private MessageFormat messageFormat;
 
     public DeathMessagePreProcessEvent(String channel, MessageFormat messageFormat, Player player, String deathMessage, PlayerDeathEvent triggeringBukkitEvent) {
         super(player, triggeringBukkitEvent);
@@ -72,6 +71,38 @@ public class DeathMessagePreProcessEvent extends GameEvent<PlayerDeathEvent> imp
     public void setMessage(String message) {
         MessageFormat messageFormat = new MessageFormat();
         messageFormat.setContent(message);
+        this.messageFormat = messageFormat;
+    }
+
+    public boolean isCancelled() {
+        return this.cancelled;
+    }
+
+    public String getDeathMessage() {
+        return this.deathMessage;
+    }
+
+    public String getChannel() {
+        return this.channel;
+    }
+
+    public MessageFormat getMessageFormat() {
+        return this.messageFormat;
+    }
+
+    public void setCancelled(boolean cancelled) {
+        this.cancelled = cancelled;
+    }
+
+    public void setDeathMessage(String deathMessage) {
+        this.deathMessage = deathMessage;
+    }
+
+    public void setChannel(String channel) {
+        this.channel = channel;
+    }
+
+    public void setMessageFormat(MessageFormat messageFormat) {
         this.messageFormat = messageFormat;
     }
 }

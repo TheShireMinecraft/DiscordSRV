@@ -1,7 +1,7 @@
 /*
  * DiscordSRV - https://github.com/DiscordSRV/DiscordSRV
  *
- * Copyright (C) 2016 - 2022 Austin "Scarsz" Shapiro
+ * Copyright (C) 2016 - 2024 Austin "Scarsz" Shapiro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -63,7 +63,7 @@ public @interface SlashCommand {
     SlashCommandPriority priority() default SlashCommandPriority.NORMAL;
 
     /**
-     * Tells DiscordSRV to automatically acknowledge the command & defer replying for you.
+     * Tells DiscordSRV to automatically acknowledge the command &amp; defer replying for you.
      * Reply deferring is required when your command might take longer than 3 seconds to execute.
      * If the reply is deferred, you have up to 15 minutes for your command to respond.
      * Until then, a "bot is thinking" message will be shown to the user that executed the command.

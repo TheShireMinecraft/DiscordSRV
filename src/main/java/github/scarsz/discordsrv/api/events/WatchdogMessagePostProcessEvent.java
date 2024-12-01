@@ -1,7 +1,7 @@
 /*
  * DiscordSRV - https://github.com/DiscordSRV/DiscordSRV
  *
- * Copyright (C) 2016 - 2022 Austin "Scarsz" Shapiro
+ * Copyright (C) 2016 - 2024 Austin "Scarsz" Shapiro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,22 +20,21 @@
 
 package github.scarsz.discordsrv.api.events;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.bukkit.event.Cancellable;
 
 /**
  * <p>Called after DiscordSRV has processed a watchdog message but before being sent to Discord.
  * Modification is allow and will effect the message sent to Discord.</p>
  */
+@SuppressWarnings({"LombokGetterMayBeUsed", "LombokSetterMayBeUsed"})
 public class WatchdogMessagePostProcessEvent extends Event implements Cancellable {
 
-    @Getter @Setter private boolean cancelled;
+    private boolean cancelled;
 
-    @Getter @Setter private String channel;
-    @Getter @Setter private String processedMessage;
+    private String channel;
+    private String processedMessage;
 
-    @Getter @Setter private int count;
+    private int count;
 
     public WatchdogMessagePostProcessEvent(String channel, String processedMessage, int count, boolean cancelled) {
         this.channel = channel;
@@ -44,4 +43,35 @@ public class WatchdogMessagePostProcessEvent extends Event implements Cancellabl
         setCancelled(cancelled);
     }
 
+    public boolean isCancelled() {
+        return this.cancelled;
+    }
+
+    public String getChannel() {
+        return this.channel;
+    }
+
+    public String getProcessedMessage() {
+        return this.processedMessage;
+    }
+
+    public int getCount() {
+        return this.count;
+    }
+
+    public void setCancelled(boolean cancelled) {
+        this.cancelled = cancelled;
+    }
+
+    public void setChannel(String channel) {
+        this.channel = channel;
+    }
+
+    public void setProcessedMessage(String processedMessage) {
+        this.processedMessage = processedMessage;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
 }

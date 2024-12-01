@@ -1,7 +1,7 @@
 /*
  * DiscordSRV - https://github.com/DiscordSRV/DiscordSRV
  *
- * Copyright (C) 2016 - 2022 Austin "Scarsz" Shapiro
+ * Copyright (C) 2016 - 2024 Austin "Scarsz" Shapiro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,19 +20,25 @@
 
 package github.scarsz.discordsrv.api.events;
 
-import lombok.Getter;
-
 /**
  * <p>Called directly after a debug report was submitted to GitHub Gists and the requester was informed.</p>
  */
+@SuppressWarnings("LombokGetterMayBeUsed")
 public class DebugReportedEvent extends Event {
 
-    @Getter private final String requester;
-    @Getter private final String url;
+    private final String requester;
+    private final String url;
 
     public DebugReportedEvent(String requester, String url) {
         this.requester = requester;
         this.url = url;
     }
 
+    public String getRequester() {
+        return this.requester;
+    }
+
+    public String getUrl() {
+        return this.url;
+    }
 }

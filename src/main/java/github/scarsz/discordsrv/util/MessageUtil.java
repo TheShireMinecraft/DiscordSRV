@@ -1,7 +1,7 @@
 /*
  * DiscordSRV - https://github.com/DiscordSRV/DiscordSRV
  *
- * Copyright (C) 2016 - 2022 Austin "Scarsz" Shapiro
+ * Copyright (C) 2016 - 2024 Austin "Scarsz" Shapiro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,13 +30,10 @@ import dev.vankka.simpleast.core.simple.SimpleMarkdownRules;
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.objects.DiscordSRVMinecraftRenderer;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -50,7 +47,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Utility class for sending & editing messages from/for CommandSenders.
+ * Utility class for sending &amp; editing messages from/for CommandSenders.
  * Utilizes both MiniMessage and Minecraft's legacy formatting style.
  */
 public class MessageUtil {
@@ -79,7 +76,7 @@ public class MessageUtil {
      * Pattern for capturing both ampersand and the legacy section sign color codes.
      * @see #LEGACY_SECTION
      */
-    public static final Pattern STRIP_PATTERN = Pattern.compile("(?<!<@)[&§\u007F](?i)[0-9a-fklmnorx]");
+    public static final Pattern STRIP_PATTERN = Pattern.compile("(?:(?<!<@)&|[§\u007F])(?i)[0-9a-fklmnorx]");
 
     /**
      * Pattern for capturing section sign color codes.
@@ -88,7 +85,7 @@ public class MessageUtil {
     public static final Pattern STRIP_SECTION_ONLY_PATTERN = Pattern.compile("(?<!<@)§(?i)[0-9a-fklmnorx]");
 
     /**
-     * Pattern for translating color codes (legacy & adventure), excluding role mentions ({@code <@&role id>}).
+     * Pattern for translating color codes (legacy &amp; adventure), excluding role mentions ({@code <@&amp;role id>}).
      */
     public static final Pattern TRANSLATE_PATTERN = Pattern.compile("(?<!<@)(&)(?i)(?:[0-9a-fklmnorx]|#[0-9a-f]{6})");
 
@@ -171,11 +168,7 @@ public class MessageUtil {
      */
     public static Component toComponent(String message, boolean useLegacy) {
         if (useLegacy) {
-            TextComponent component = LEGACY_SERIALIZER.deserialize(message);
-            List<Component> children = new ArrayList<>(component.children());
-            children.add(0, Component.text(component.content()).style(component.style()));
-            component = component.content("").style(Style.empty()).children(children);
-            return component;
+            return LEGACY_SERIALIZER.deserialize(message);
         } else {
             Component component = MiniMessage.miniMessage().deserialize(message);
             component = component.replaceText(
@@ -350,13 +343,13 @@ public class MessageUtil {
 
         try {
             if (!audiences.isEmpty()) {
-                Audience.audience(audiences).sendMessage(Identity.nil(), adventureMessage);
+                Audience.audience(audiences).sendMessage(adventureMessage);
             }
 
             if (!degradedAudiences.isEmpty()) {
                 // Put it through legacy serializer for degraded audiences
                 Component degraded = LEGACY_SERIALIZER.deserialize(LEGACY_SERIALIZER.serialize(adventureMessage));
-                Audience.audience(degradedAudiences).sendMessage(Identity.nil(), degraded);
+                Audience.audience(degradedAudiences).sendMessage(degraded);
             }
         } catch (NoClassDefFoundError e) {
             // might happen with 1.7
@@ -373,7 +366,7 @@ public class MessageUtil {
     }
 
     /**
-     * Strips the given String of legacy Minecraft coloring (both & and §).
+     * Strips the given String of legacy Minecraft coloring (both &amp; and §).
      *
      * @param text the given String to strip colors and formatting from
      * @return the given String with coloring and formatting stripped
@@ -412,7 +405,7 @@ public class MessageUtil {
     }
 
     /**
-     * Strip the given String of legacy Minecraft coloring (both & and §). Useful for sending things to Discord.
+     * Strip the given String of legacy Minecraft coloring (both &amp; and §). Useful for sending things to Discord.
      *
      * @param text the given String to strip colors from
      * @return the given String with coloring stripped
@@ -440,7 +433,7 @@ public class MessageUtil {
     }
 
     /**
-     * Translates ampersand (&) characters into section signs (§) for color codes. Ignores role mentions.
+     * Translates ampersand (&amp;) characters into section signs (§) for color codes. Ignores role mentions.
      *
      * @param text the input text
      * @return the output text

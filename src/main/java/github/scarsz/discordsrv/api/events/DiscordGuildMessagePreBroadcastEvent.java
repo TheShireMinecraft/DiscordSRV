@@ -1,7 +1,7 @@
 /*
  * DiscordSRV - https://github.com/DiscordSRV/DiscordSRV
  *
- * Copyright (C) 2016 - 2022 Austin "Scarsz" Shapiro
+ * Copyright (C) 2016 - 2024 Austin "Scarsz" Shapiro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,8 +20,6 @@
 
 package github.scarsz.discordsrv.api.events;
 
-import lombok.Getter;
-import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 
@@ -33,15 +31,36 @@ import java.util.List;
  *
  * <p>At the time this event is called, the message, channel, and recipients can still be changed</p>
  */
+@SuppressWarnings("LombokGetterMayBeUsed")
 public class DiscordGuildMessagePreBroadcastEvent extends Event {
 
-    @Getter @Setter private String channel;
-    @Getter @Setter private Component message;
-    @Getter private final List<? extends CommandSender> recipients;
+    private String channel;
+    private Component message;
+    private final List<? extends CommandSender> recipients;
 
     public DiscordGuildMessagePreBroadcastEvent(String channel, Component message, List<? extends CommandSender> recipients) {
         this.channel = channel;
         this.message = message;
         this.recipients = recipients;
+    }
+
+    public String getChannel() {
+        return this.channel;
+    }
+
+    public Component getMessage() {
+        return this.message;
+    }
+
+    public List<? extends CommandSender> getRecipients() {
+        return this.recipients;
+    }
+
+    public void setChannel(String channel) {
+        this.channel = channel;
+    }
+
+    public void setMessage(Component message) {
+        this.message = message;
     }
 }

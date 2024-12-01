@@ -1,7 +1,7 @@
 /*
  * DiscordSRV - https://github.com/DiscordSRV/DiscordSRV
  *
- * Copyright (C) 2016 - 2022 Austin "Scarsz" Shapiro
+ * Copyright (C) 2016 - 2024 Austin "Scarsz" Shapiro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,15 +20,18 @@
 
 package github.scarsz.discordsrv.api.events;
 
-import lombok.Getter;
 import mineverse.Aust1n46.chat.api.events.VentureChatEvent;
 
+@SuppressWarnings("LombokGetterMayBeUsed")
 abstract class VentureChatMessageEvent extends Event {
 
-    @Getter final private VentureChatEvent ventureChatEvent;
+    final private VentureChatEvent ventureChatEvent;
 
     VentureChatMessageEvent(VentureChatEvent ventureChatEvent) {
         this.ventureChatEvent = ventureChatEvent;
     }
 
+    public VentureChatEvent getVentureChatEvent() {
+        return this.ventureChatEvent;
+    }
 }

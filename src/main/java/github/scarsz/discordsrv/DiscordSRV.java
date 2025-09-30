@@ -37,7 +37,7 @@ import github.scarsz.discordsrv.hooks.PluginHook;
 import github.scarsz.discordsrv.hooks.VaultHook;
 import github.scarsz.discordsrv.hooks.chat.ChatHook;
 import github.scarsz.discordsrv.hooks.vanish.VanishHook;
-import github.scarsz.discordsrv.hooks.world.MultiverseCoreHook;
+import github.scarsz.discordsrv.hooks.world.WorldHook;
 import github.scarsz.discordsrv.listeners.*;
 import github.scarsz.discordsrv.modules.alerts.AlertListener;
 import github.scarsz.discordsrv.modules.requirelink.RequireLinkModule;
@@ -1130,7 +1130,10 @@ public class DiscordSRV extends JavaPlugin {
                 // dynmap
                 "github.scarsz.discordsrv.hooks.DynmapHook",
                 // luckperms
-                "github.scarsz.discordsrv.hooks.permissions.LuckPermsHook"
+                "github.scarsz.discordsrv.hooks.permissions.LuckPermsHook",
+                // world hooks
+                "github.scarsz.discordsrv.hooks.world.MultiverseCoreV4Hook",
+                "github.scarsz.discordsrv.hooks.world.MultiverseCoreV5Hook"
         }) {
             try {
                 Class<?> hookClass = Class.forName(hookClassName);
@@ -1260,92 +1263,6 @@ public class DiscordSRV extends JavaPlugin {
         }
         channelUpdater.start();
 
-        // enable metrics
-        if (!config().getBooleanElse("MetricsDisabled", false)) {
-            Metrics bStats = new Metrics(this, 387);
-            bStats.addCustomChart(new SimplePie("linked_channels", () -> String.valueOf(channels.size())));
-            bStats.addCustomChart(new AdvancedPie("hooked_plugins", () -> new HashMap<String, Integer>(){{
-                if (pluginHooks.size() == 0) {
-                    put("none", 1);
-                } else {
-                    for (PluginHook hookedPlugin : pluginHooks) {
-                        Plugin plugin = hookedPlugin.getPlugin();
-                        if (plugin == null) continue;
-                        put(plugin.getName(), 1);
-                    }
-                }
-            }}));
-            bStats.addCustomChart(new SingleLineChart("minecraft-discord_account_links", () -> accountLinkManager.getLinkedAccountCount()));
-            bStats.addCustomChart(new SimplePie("server_language", () -> DiscordSRV.config().getLanguage().getName()));
-            bStats.addCustomChart(new AdvancedPie("features", () -> new HashMap<String, Integer>() {{
-                if (getConsoleChannel() != null) put("Console channel", 1);
-                if (StringUtils.isNotBlank(config().getString("DiscordChatChannelPrefixRequiredToProcessMessage"))) put("Chatting prefix", 1);
-                if (JdbcAccountLinkManager.shouldUseJdbc(true)) put("JDBC", 1);
-                if (config().getBoolean("Experiment_MCDiscordReserializer_ToMinecraft")) put("Discord -> MC Reserializer", 1);
-                if (config().getBoolean("Experiment_MCDiscordReserializer_ToDiscord")) put("MC -> Discord Reserializer", 1);
-                if (config().getBoolean("Experiment_MCDiscordReserializer_InBroadcast")) put("Broadcast Reserializer", 1);
-                if (config().getBoolean("Experiment_WebhookChatMessageDelivery")) put("Webhooks", 1);
-                if (config().getMap("GroupRoleSynchronizationGroupsAndRolesToSync").values().stream().anyMatch(s -> s.toString().replace("0", "").length() > 0)) put("Group -> role synchronization", 1);
-                if (config().getBoolean("Voice enabled")) put("Voice", 1);
-                if (config().getBoolean("Require linked account to play.Enabled")) {
-                    put("Require linked account to play", 1);
-                    if (config().getBoolean("Require linked account to play.Subscriber role.Require subscriber role to join")) {
-                        put("Required subscriber role to play", 1);
-                    }
-                }
-            }}));
-            bStats.addCustomChart(new SingleLineChart("atleast_1player_online", () -> PlayerUtil.getOnlinePlayers().isEmpty() ? 0 : 1));
-            bStats.addCustomChart(new SimplePie("better_online_mode", () -> {
-                boolean onlineMode = Bukkit.getOnlineMode();
-                try {
-                    Class<?> spigotConfig = Class.forName("org.spigotmc.SpigotConfig");
-                    Field bungee = spigotConfig.getField("bungee");
-
-                    if (bungee.getBoolean(null)) {
-                        return "bungee";
-                    }
-                } catch (Throwable ignored) {}
-
-                try {
-                    Class<?> paperConfig = Class.forName("com.destroystokyo.paper.PaperConfig");
-                    Field velocitySupport = paperConfig.getField("velocitySupport");
-                    Field velocityOnlineMode = paperConfig.getField("velocityOnlineMode");
-
-                    if (velocitySupport.getBoolean(null)
-                            && velocityOnlineMode.getBoolean(null)) {
-                        return "velocity";
-                    }
-                } catch (Throwable ignored) {}
-
-                return onlineMode ? "online" : "offline";
-            }));
-            bStats.addCustomChart(new DrilldownPie("server_plugins", () -> {
-                int pluginCount = Bukkit.getPluginManager().getPlugins().length;
-
-                Map<String, Integer> count = new HashMap<>();
-                count.put(String.valueOf(pluginCount), 1);
-
-                String key;
-                if (pluginCount <= 5) {
-                    key = "1-5";
-                } else if (pluginCount <= 10) {
-                    key = "6-10";
-                } else if (pluginCount <= 20) {
-                    key = "11-20";
-                } else if (pluginCount <= 50) {
-                    key = "21-50";
-                } else if (pluginCount <= 100) {
-                    key = "51-100";
-                } else {
-                    key = ((int) (Math.floor(pluginCount / 100F) * 100F)) + "+";
-                }
-
-                Map<String, Map<String, Integer>> plugins = new HashMap<>();
-                plugins.put(key, count);
-                return plugins;
-            }));
-        }
-
         // metrics file deprecated since v1.18.1
         File metricsFile = new File(getDataFolder(), "metrics.json");
         if (metricsFile.exists() && !metricsFile.delete()) metricsFile.deleteOnExit();
@@ -1380,6 +1297,7 @@ public class DiscordSRV extends JavaPlugin {
         alertListener = new AlertListener();
         jda.addEventListener(alertListener);
         api.subscribe(alertListener);
+        getServer().getPluginManager().registerEvents(alertListener, this);
 
         // set ready status
         if (jda.getStatus() == JDA.Status.CONNECTED) {
@@ -1659,6 +1577,23 @@ public class DiscordSRV extends JavaPlugin {
         }
     }
 
+    /**
+     * Gets the alias for the given world
+     *
+     * @param world The name of the world to get the alias for
+     * @return The world's alias or the provided string if no alias or supported WorldHook was found
+     */
+    public String getWorldAlias(String world) {
+        WorldHook worldHook = pluginHooks.stream()
+                .filter(hook -> hook instanceof WorldHook)
+                .map(hook -> (WorldHook) hook)
+                .findAny()
+                .orElse(null);
+
+        if (worldHook == null) return world;
+        return worldHook.getWorldAlias(world);
+    }
+
     @Deprecated
     public void processChatMessage(Player player, String message, String channel, boolean cancelled) {
         this.processChatMessage(player, message, channel, cancelled, null);
@@ -1786,7 +1721,7 @@ public class DiscordSRV extends JavaPlugin {
                     .replace("%primarygroup%", userPrimaryGroup)
                     .replace("%usernamenoescapes%", MessageUtil.strip(player.getName()))
                     .replace("%world%", player.getWorld().getName())
-                    .replace("%worldalias%", MessageUtil.strip(MultiverseCoreHook.getWorldAlias(player.getWorld().getName())));
+                    .replace("%worldalias%", MessageUtil.strip(getWorldAlias(player.getWorld().getName())));
             // Replace the PAPI placeholders in the message pattern
             discordMessagePattern = PlaceholderUtil.replacePlaceholdersToDiscord(discordMessagePattern, player);
 
@@ -1882,7 +1817,7 @@ public class DiscordSRV extends JavaPlugin {
         if (chatHook == null || channel == null) {
             if (channel != null && !channel.equalsIgnoreCase("global")) return; // don't send messages for non-global channels with no plugin hooks
             DiscordGuildMessagePreBroadcastEvent preBroadcastEvent = api.callEvent(new DiscordGuildMessagePreBroadcastEvent
-                    (channel, message, PlayerUtil.getOnlinePlayers()));
+                    (author, channel, message, PlayerUtil.getOnlinePlayers()));
             message = preBroadcastEvent.getMessage();
             channel = preBroadcastEvent.getChannel();
             MessageUtil.sendMessage(preBroadcastEvent.getRecipients(), message);

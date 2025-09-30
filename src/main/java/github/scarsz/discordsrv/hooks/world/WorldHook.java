@@ -18,19 +18,17 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  */
 
-package github.scarsz.discordsrv.util;
+package github.scarsz.discordsrv.hooks.world;
 
-public class UpdateUtil {
+import github.scarsz.discordsrv.hooks.PluginHook;
 
-    public static boolean checkForUpdates() {
-        return checkForUpdates(true);
-    }
+public interface WorldHook extends PluginHook {
 
     /**
-     * Check the build hash of DiscordSRV against the latest hashes from GitHub
-     * @return boolean indicating if an update to DiscordSRV is available
+     * Gets the alias for the given world
+     *
+     * @param world The name of the world to get the alias for
+     * @return The world's alias or the provided string if no alias was found
      */
-    public static boolean checkForUpdates(boolean verbose) {
-        return false;
-    }
+    String getWorldAlias(String world);
 }
